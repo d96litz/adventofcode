@@ -87,7 +87,7 @@ impl Iterator for SlopeIntoItorator {
         self.x_index += self.slope.x_step;
 
         if self.y_index < self.slope.lines.len() {
-            Some(self.slope.lines[self.y_index].chars().nth(self.x_index % self.slope.lines[0].len()).unwrap())
+            Some(self.slope.lines[self.y_index].chars().nth(self.x_index % self.slope.lines[self.y_index].len()).unwrap())
         } else {
             None
         }
