@@ -30,15 +30,6 @@ macro_rules! count_trees {
     };
 }
 
-fn main() {
-    let lines = lines_from_file("rsc/input.txt").expect("error");
-    println!("{:?}", count_trees!(
-        sled down lines with
-        3 steps right and
-        1 steps down
-    ));
-}
-
 trait Count<T> {
     fn count_with_index(self, func: impl Fn(&T, usize) -> bool) -> i32;
     fn count(self, func: impl Fn(&T) -> bool) -> i32;
@@ -105,4 +96,13 @@ impl Iterator for SlopeIntoItorator {
             None
         }
     }
+}
+
+fn main() {
+    let lines = lines_from_file("rsc/input.txt").expect("error");
+    println!("{:?}", count_trees!(
+        sled down lines with
+        3 steps right and
+        1 steps down
+    ));
 }
