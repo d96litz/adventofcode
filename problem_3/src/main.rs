@@ -10,7 +10,7 @@ fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
 
 macro_rules! count_trees {
     (
-        sled down $lines:ident with
+        slide down $lines:ident with
         $($step:literal steps $dir:ident)and+
     ) => {
         {
@@ -38,20 +38,16 @@ trait Count<T> {
 impl Count<char> for Slope<String> {
     fn count_with_index(self, func: impl Fn(&char, usize) -> bool) -> i32 {
         let mut counter = 0;
-    
         for (index, element) in self.into_iter().enumerate() {
             if func(&element, index) {counter += 1};
         }
-    
         counter
     }
     fn count(self, func: impl Fn(&char) -> bool) -> i32 {
         let mut counter = 0;
-    
         for (_index, element) in self.into_iter().enumerate() {
             if func(&element) {counter += 1};
         }
-    
         counter
     }
 }
@@ -90,7 +86,7 @@ impl Iterator for SlopeIntoItorator {
         self.y_index += self.slope.y_step;
         self.x_index += self.slope.x_step;
 
-        if  self.y_index < self.slope.lines.len() {
+        if self.y_index < self.slope.lines.len() {
             Some(self.slope.lines[self.y_index].chars().nth(self.x_index % self.slope.lines[0].len()).unwrap())
         } else {
             None
@@ -101,7 +97,7 @@ impl Iterator for SlopeIntoItorator {
 fn main() {
     let lines = lines_from_file("rsc/input.txt").expect("error");
     println!("{:?}", count_trees!(
-        sled down lines with
+        slide down lines with
         3 steps right and
         1 steps down
     ));
