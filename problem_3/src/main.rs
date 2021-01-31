@@ -8,13 +8,35 @@ fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
     BufReader::new(File::open(filename)?).lines().collect()
 }
 
+macro_rules! count_trees {
+    (
+        sled down $lines:ident with
+        $($step:literal steps $dir:ident)and+
+    ) => {
+        {
+            let mut slope = Slope{x_step: 0, y_step: 0, lines: $lines.clone()};
+            $(
+                let direction = stringify!($dir);
+                match stringify!($dir) {
+                    "right" => slope.x_step += $step,
+                    "down" => slope.y_step += $step,
+                    "left" => slope.x_step -= $step,
+                    "up" => slope.y_step -= $step,
+                    _ => panic!("Invalid direction {:?}", direction),
+                }
+            )*
+            slope.count(|ch| *ch == '#' )
+        }
+    };
+}
+
 fn main() {
     let lines = lines_from_file("rsc/input.txt").expect("error");
-
-    let solution_2 = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
-    .iter().fold(1, |acc, el| acc * Mountain{x_step: el.0, y_step: el.1, lines: lines.clone()}.count(|ch| *ch == '#' ));
-
-    println!("{:?}", solution_2);
+    println!("{:?}", count_trees!(
+        sled down lines with
+        3 steps right and
+        1 steps down
+    ));
 }
 
 trait Count<T> {
@@ -22,30 +44,7 @@ trait Count<T> {
     fn count(self, func: impl Fn(&T) -> bool) -> i32;
 }
 
-// impl<T> Count<T> for Vec<T> {
-//     fn count_with_index(self, func: impl Fn(&T, usize) -> bool) -> i32 {
-//         let mut counter = 0;
-    
-//         for (index, element) in self.iter().enumerate() {
-//             if func(&element, index) {counter += 1};
-//         }
-    
-//         counter
-//     }
-
-//     fn count(self, func: impl Fn(&T) -> bool) -> i32 {
-//         let mut counter = 0;
-    
-//         for (_index, element) in self.iter().enumerate() {
-//             if func(&element) {counter += 1};
-//         }
-    
-//         counter
-//     }
-// }
-
-
-impl Count<char> for Mountain<String> {
+impl Count<char> for Slope<String> {
     fn count_with_index(self, func: impl Fn(&char, usize) -> bool) -> i32 {
         let mut counter = 0;
     
@@ -66,13 +65,13 @@ impl Count<char> for Mountain<String> {
     }
 }
 
-impl IntoIterator for Mountain<String> {
+impl IntoIterator for Slope<String> {
     type Item = char;
-    type IntoIter = MountainIntoItorator;
+    type IntoIter = SlopeIntoItorator;
 
     fn into_iter(self) -> Self::IntoIter {
-        MountainIntoItorator {
-            mountain: self,
+        SlopeIntoItorator {
+            slope: self,
             x_index: 0,
             y_index: 0,
         }
@@ -80,28 +79,28 @@ impl IntoIterator for Mountain<String> {
 }
 
 #[derive(Debug)]
-struct MountainIntoItorator {
-    mountain: Mountain<String>,
+struct SlopeIntoItorator {
+    slope: Slope<String>,
     x_index: usize,
     y_index: usize,
 }
 
 #[derive(Debug)]
-struct Mountain<String> {
+struct Slope<String> {
     x_step: usize,
     y_step: usize,
     lines: Vec<String>,
 }
 
 
-impl Iterator for MountainIntoItorator {
+impl Iterator for SlopeIntoItorator {
     type Item = char;
     fn next(&mut self) -> Option<Self::Item> {
-        self.y_index += self.mountain.y_step;
-        self.x_index += self.mountain.x_step;
+        self.y_index += self.slope.y_step;
+        self.x_index += self.slope.x_step;
 
-        if  self.y_index < self.mountain.lines.len() {
-            Some(self.mountain.lines[self.y_index].chars().nth(self.x_index % self.mountain.lines[0].len()).unwrap())
+        if  self.y_index < self.slope.lines.len() {
+            Some(self.slope.lines[self.y_index].chars().nth(self.x_index % self.slope.lines[0].len()).unwrap())
         } else {
             None
         }
